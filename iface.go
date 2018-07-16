@@ -28,6 +28,36 @@ type Storage interface {
 	Get(key []byte) ([]byte, StorageError)
 }
 
+type ClientError interface {
+	error
+	Cause() error
+}
+
+type clientError struct {
+	msg string
+	cause error
+}
+
+func (ce *clientError) Cause() error {
+	return ce.cause
+}
+
+func (ce *clientError) Error() string {
+	if ce.cause != nil {
+		return fmt.Sprintf("ERR: %s (Cause: %s)", ce.msg, ce.cause.Error())
+	} else {
+		return fmt.Sprintf("ERR: %s", ce.msg)
+	}
+}
+
+func ClientErrorf(msg string, args... interface{}) ClientError {
+	return &clientError{msg:fmt.Sprintf(msg, args...)}
+}
+
+func ClientErrorf2(cause error, msg string, args... interface{}) ClientError {
+	return &clientError{msg:fmt.Sprintf(msg, args...),cause:cause}
+}
+
 type EngineError interface {
 	error
 	ErrCode() uint8
@@ -35,7 +65,7 @@ type EngineError interface {
 	Cause() error
 }
 
-// Too much stuff going on. 
+// Too much stuff going on.
 const ERR_TOOBUSY = uint8(0x01)
 
 // Generic internal error.

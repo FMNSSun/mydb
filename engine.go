@@ -20,7 +20,7 @@ func (de *DefaultEngine) AddReplica(raddr string) error {
 	mconn, err := DialMessageConn(raddr)
 
 	if err != nil {
-		log.Printf("ERROR: %s", err.Error())
+		log.Printf("[ENGINE] ERROR: %s", err.Error())
 		return err
 	}
 
@@ -34,12 +34,12 @@ func (de *DefaultEngine) Serve(laddr string) error {
 }
 
 func (de *DefaultEngine) acceptLoop(laddr string) error {
-	log.Print("begin acceptLoop")
-	
+	log.Print("[ENGINE] begin acceptLoop")
+
 	sck, err := net.Listen("tcp", laddr)
 
 	if err != nil {
-		log.Printf("ERROR: %s", err.Error())
+		log.Printf("[ENGINE] ERROR: %s", err.Error())
 		return err
 	}
 
@@ -47,47 +47,47 @@ func (de *DefaultEngine) acceptLoop(laddr string) error {
 		conn, err := sck.Accept()
 
 		if err != nil {
-			log.Printf("ERROR: %s", err.Error())
+			log.Printf("[ENGINE] ERROR: %s", err.Error())
 			break
 		}
 
 		go de.connLoop(NewMessageConn(conn))
 	}
 
-	log.Print("exit acceptLoop")
+	log.Print("[ENGINE] exit acceptLoop")
 	return nil
 }
 
 func (de *DefaultEngine) connLoop(conn MessageConn) error {
-	log.Print("begin connLoop")
+	log.Print("[ENGINE] begin connLoop")
 
 	for {
 		msg, err := conn.ReadMessage()
 
 		if err != nil {
-			log.Printf("ERROR: %s", err.Error())
+			log.Printf("[ENGINE] ERROR: %s", err.Error())
 			break
 		}
 
-		log.Printf("Message received: %s", msg)
+		log.Printf("[ENGINE] Message received: %s", msg)
 
 		retMsg, perr := de.ProcessMessage(msg)
 
 		if perr != nil {
-			log.Printf("ERROR: %s", perr.Error())
+			log.Printf("[ENGINE] ERROR: %s", perr.Error())
 			conn.SendMessage(&Status{MId: msg.Id(), StatusCode: perr.ErrCode()})
-			break	
+			break
 		}
 
 		err = conn.SendMessage(retMsg)
 
 		if err != nil {
-			log.Printf("ERROR: %s", err.Error())
+			log.Printf("[ENGINE] ERROR: %s", err.Error())
 			break
 		}
 	}
 
-	log.Print("exit connLoop")
+	log.Print("[ENGINE] exit connLoop")
 	return nil
 }
 

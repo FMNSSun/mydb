@@ -25,7 +25,7 @@ func NewMemoryStorage() Storage {
 }
 
 func (m *MemoryStorage) Get(key []byte) ([]byte, StorageError) {
-	log.Printf("Get: %x", key)
+	log.Printf("[MEMORYSTORAGE] Get: %x", key)
 
 	m.mutex.RLock()
 
@@ -47,7 +47,7 @@ func (m *MemoryStorage) Get(key []byte) ([]byte, StorageError) {
 }
 
 func (m *MemoryStorage) Put(key []byte, value []byte) StorageError {
-	log.Printf("Put: %x", key)
+	log.Printf("[MEMORYSTORAGE] Put: %x", key)
 
 	m.mutex.Lock()
 

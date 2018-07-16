@@ -31,51 +31,29 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	put([]byte("hello"), []byte("world"), "localhost:10001")
-	get([]byte("hello"), "localhost:10002")
-}
-
-func put(key, value []byte, raddr string) {
-	mconn, err := DialMessageConn(raddr)
+	client, err := NewClient("localhost:10001")
 
 	if err != nil {
-		log.Fatalf("ERROR: %s", err.Error())
+		log.Fatal(err.Error())
 	}
 
-	err = mconn.SendMessage(&Put{
-		Key: key,
-		Value: value,
-	})
+	err = client.Put([]byte("hello"), []byte("world"))
 
 	if err != nil {
-		log.Fatalf("ERROR: %s", err.Error())
+		log.Fatal(err.Error())
 	}
 
-	msg, err := mconn.ReadMessage()
+	client, err = NewClient("localhost:10002")
 
 	if err != nil {
-		log.Fatalf("ERROR: %s", err.Error())
+		log.Fatal(err.Error())
 	}
 
-	log.Printf("Msg: %s", msg)
-}
-
-func get(key []byte, raddr string) {
-	mconn, err := DialMessageConn(raddr)
-
-	err = mconn.SendMessage(&Get{
-		Key: key,
-	})
+	val, err := client.Get([]byte("hello"))
 
 	if err != nil {
-		log.Fatalf("ERROR: %s", err.Error())
+		log.Fatal(err.Error())
 	}
 
-	msg, err := mconn.ReadMessage()
-
-	if err != nil {
-		log.Fatalf("ERROR: %s", err.Error())
-	}
-
-	log.Printf("Msg: %s", msg)
+	log.Print(val)
 }

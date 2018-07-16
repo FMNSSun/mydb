@@ -58,7 +58,7 @@ func (mc *MyConn) ReadMessage() (Message, error) {
 	_, err := io.ReadFull(mc.conn, header)
 
 	if err != nil {
-		log.Printf("ERROR: header: %s", err.Error())
+		log.Printf("[CONN] ERROR: header: %s", err.Error())
 		return nil, err
 	}
 
@@ -71,7 +71,7 @@ func (mc *MyConn) ReadMessage() (Message, error) {
 	_, err = io.ReadFull(mc.conn, payload)
 
 	if err != nil {
-		log.Printf("ERROR: payload: %s", err.Error())
+		log.Printf("[CONN] ERROR: payload: %s", err.Error())
 		return nil, err
 	}
 
