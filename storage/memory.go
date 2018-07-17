@@ -3,13 +3,13 @@ package storage
 import (
 	. "github.com/FMNSSun/mydb"
 	"sync"
-	"log"
 	"bytes"
 )
 
 type MemoryStorage struct {
 	m map[KeyHash][]*kv
 	mutex *sync.RWMutex
+	logger Logger
 }
 
 type kv struct {
@@ -17,15 +17,16 @@ type kv struct {
 	value []byte
 }
 
-func NewMemoryStorage() Storage {
+func NewMemoryStorage(logger Logger) Storage {
 	return &MemoryStorage{
 		m: make(map[KeyHash][]*kv),
 		mutex: &sync.RWMutex{},
+		logger: logger,
 	}
 }
 
 func (m *MemoryStorage) Get(key []byte) ([]byte, StorageError) {
-	log.Printf("[MEMORYSTORAGE] Get: %x", key)
+	m.logger.Outf(LOGLVL_INFO, "[MEMORYSTORAGE] Get: %x", key)
 
 	m.mutex.RLock()
 
@@ -34,7 +35,7 @@ func (m *MemoryStorage) Get(key []byte) ([]byte, StorageError) {
 	m.mutex.RUnlock()
 
 	if !ok {
-		return nil, StorageErrorf(ERR_NOTEXISTS, "Entry does not exist.")
+		return nil, nil
 	}
 
 	for _, candidate := range val {
@@ -47,7 +48,7 @@ func (m *MemoryStorage) Get(key []byte) ([]byte, StorageError) {
 }
 
 func (m *MemoryStorage) Put(key []byte, value []byte) StorageError {
-	log.Printf("[MEMORYSTORAGE] Put: %x", key)
+	m.logger.Outf(LOGLVL_INFO, "[MEMORYSTORAGE] Put: %x", key)
 
 	m.mutex.Lock()
 

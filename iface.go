@@ -5,6 +5,31 @@ import (
 	"fmt"
 )
 
+type Logger interface {
+	Outf(lvl uint8, msg string, args... interface{})
+	Out(lvl uint8, msg string)
+	Fatalf(msg string, args... interface{})
+	Fatal(msg string)
+}
+
+const LOGLVL_FATAL = uint8(0x00)
+const LOGLVL_ERROR = uint8(0x01)
+const LOGLVL_WARNING = uint8(0x04)
+const LOGLVL_INFO = uint8(0x08)
+const LOGLVL_VERBOSE = uint8(0xFF)
+
+// Cache the result for some time.
+const LKUPMODE_CACHE = uint8(0x01)
+
+// Persist the result.
+const LKUPMODE_PERSIST = uint8(0x02)
+
+// Ask one server at a time. 
+const LKUPMODE_DEFAULT = uint8(0x04)
+
+// Ask all servers at the same time. 
+const LKUPMODE_PARALLEL = uint8(0x08)
+
 type MessageConn interface {
 	SendMessage(msg Message) error
 	ReadMessage() (Message, error)
@@ -21,6 +46,7 @@ func Hash(key []byte) KeyHash {
 type Engine interface {
 	Serve(laddr string) error
 	AddReplica(raddr string) error
+	AddLookup(raddr string) error
 }
 
 type Storage interface {
@@ -77,6 +103,12 @@ const ERR_REPLICATE = uint8(0x03)
 // Generic storage error
 const ERR_STORAGE = uint8(0x04)
 
+// Generic lookup error
+const ERR_LOOKUP = uint8(0x05)
+
+// Entry does not exist.
+const ERR_NOTEXISTS = uint8(0xC0)
+
 type engineError struct {
 	errCode uint8
 	msg string
@@ -124,10 +156,6 @@ type StorageError interface {
 	Msg() string
 	Cause() error
 }
-
-// Entry does not exist.
-const ERR_NOTEXISTS = uint8(0xC0)
-
 
 type storageError struct {
 	errCode uint8
