@@ -6,22 +6,40 @@ import (
 	"log"
 	"time"
 	"fmt"
+	"os"
+	"io"
+	"flag"
+	"sync"
 )
 
 
 func main() {
-	logger1 := NewLogger(nil, "E1 > ")
 
-	engine1 := NewEngine(NewMemoryStorage(logger1), logger1)
+	var lout io.Writer = nil
+
+	doLog := flag.Bool("log", false, "Log?")
+	num := flag.Int("num", 1024*128, "Iterations?")
+
+	flag.Parse()
+
+	if *doLog {
+		lout = os.Stderr
+	}
+
+	N := *num
+
+	logger1 := NewLogger(lout, "E1 > ")
+
+	engine1 := NewEngine(NewSimpleDiskStorage("./dio1/", logger1), logger1)
 
 	go func() {
 		err := engine1.Serve(":10001")
 		logger1.Fatal(err.Error())
 	}()
 
-	logger2 := NewLogger(nil, "E2 > ")
+	logger2 := NewLogger(lout, "E2 > ")
 
-	engine2 := NewEngine(NewMemoryStorage(logger2), logger2)
+	engine2 := NewEngine(NewSimpleDiskStorage("./dio2/", logger2), logger2)
 
 	go func() {
 		err := engine2.Serve(":10002")
@@ -36,38 +54,112 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	client, err := NewClient("localhost:10002", NewLogger(nil, "C >"))
+	client1, err := NewClient("localhost:10001", NewLogger(lout, "C >"))
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	client2, err := NewClient("localhost:10001", NewLogger(lout, "C >"))
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	now := time.Now().UnixNano()
-	N := 1024*256
 
-	for i := 0; i < N; i++ {
+	var wg sync.WaitGroup
 
-		err = client.Put([]byte("hello"), []byte("world"))
+	wg.Add(2)
 
-		if err != nil {
-			log.Fatal(err.Error())
+	go func() {
+		key := []byte{0x00, 0}
+		data := []byte("hello world this is a somewhat decently long sentence with some letters in it.")
+
+		for i := 0; i < N; i++ {
+
+			putErr := client1.Put(key, data)
+
+			if putErr != nil {
+				log.Fatal(err.Error())
+			}
+
+			key[1]++
 		}
 
-	}
+		wg.Done()
+	}()
 
-	for i := 0; i < N; i++ {
+	go func() {
+		key := []byte{0xFF, 0}
+		data := []byte("hello world this is a somewhat decently long sentence with some letters in it.")
 
-		_, err = client.Get([]byte("hello"))
+		for i := 0; i < N; i++ {
 
-		if err != nil {
-			log.Fatal(err.Error())
+			putErr := client2.Put(key, data)
+
+			if putErr != nil {
+				log.Fatal(err.Error())
+			}
+
+			key[1]++
 		}
 
-	}
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	diff := time.Now().UnixNano() - now
 	diffs := float64(diff) / float64(1000000000)
 	opsps := float64(N) / float64(diffs)
 
-	fmt.Printf("%f ops/s (%f seconds)\n", opsps, diffs)
+	fmt.Printf("PUT: %f ops/s (%f seconds)\n", opsps, diffs)
+
+	now = time.Now().UnixNano()
+
+	wg.Add(2)
+
+	go func() {
+		key := []byte{0x00, 0}
+
+		for i := 0; i < N; i++ {
+
+			_, getErr := client1.Get(key)
+
+			if getErr != nil {
+				log.Fatal(err.Error())
+			}
+
+			key[1]++
+		}
+
+		wg.Done()
+	}()
+
+	go func() {
+		key := []byte{0xFF, 0}
+
+		for i := 0; i < N; i++ {
+
+			_, getErr := client2.Get(key)
+
+			if getErr != nil {
+				log.Fatal(err.Error())
+			}
+
+			key[1]++
+		}
+
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	diff = time.Now().UnixNano() - now
+	diffs = float64(diff) / float64(1000000000)
+	opsps = float64(N) / float64(diffs)
+
+	fmt.Printf("GET: %f ops/s (%f seconds)\n", opsps, diffs)
+
 }

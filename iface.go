@@ -178,3 +178,11 @@ func StorageErrorf(errCode uint8, msg string, args... interface{}) StorageError 
 		msg: fmt.Sprintf(msg, args...),
 	}
 }
+
+func StorageErrorf2(errCode uint8, cause error, msg string, args... interface{}) StorageError {
+	return &storageError {
+		errCode: errCode,
+		msg: fmt.Sprintf(msg, args...),
+		cause: cause,
+	}
+}
