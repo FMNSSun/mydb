@@ -113,6 +113,8 @@ func (ds *SimpleDiskStorage) Put(key, value []byte) StorageError {
 	err = f.Sync()
 
 	if err != nil {
+		// TODO: What do we do with the file then? If we leave it in a partial state
+		// then reads will read garbage? (mroman)
 		ds.logger.Outf(LOGLVL_ERROR, "[DIOSTORAGE] ERROR: %s", err.Error())
 		f.Close()
 		return StorageErrorf2(ERR_STORAGE, err, "Could not sync file.")

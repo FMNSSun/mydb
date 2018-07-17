@@ -47,6 +47,8 @@ func (ss *MySQLStorage) Put(key, value []byte) StorageError {
 	err = stmt.Close()
 
 	if err != nil {
+		// TODO: Should we really error out here? The exec was successful so
+		// at least the data SHOULD be in a persistent state. (mroman)
 		ss.logger.Outf(LOGLVL_ERROR, "[MYSQLSTORAGE] ERROR: %s", err.Error())
 		return StorageErrorf2(ERR_STORAGE, err, "Could not close statement.")
 	}

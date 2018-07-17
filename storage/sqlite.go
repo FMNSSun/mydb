@@ -46,6 +46,8 @@ func (ss *SqliteStorage) Put(key, value []byte) StorageError {
 
 	if err != nil {
 		ss.logger.Outf(LOGLVL_ERROR, "[SQLITESTORAGE] ERROR: %s", err.Error())
+		// TODO: Should we really error out here? The exec was successful so
+		// at least the data SHOULD be in a persistent state. (mroman)
 		return StorageErrorf2(ERR_STORAGE, err, "Could not close statement.")
 	}
 
