@@ -18,17 +18,6 @@ const LOGLVL_WARNING = uint8(0x04)
 const LOGLVL_INFO = uint8(0x08)
 const LOGLVL_VERBOSE = uint8(0xFF)
 
-// Cache the result for some time.
-const LKUPMODE_CACHE = uint8(0x01)
-
-// Persist the result.
-const LKUPMODE_PERSIST = uint8(0x02)
-
-// Ask one server at a time. 
-const LKUPMODE_DEFAULT = uint8(0x04)
-
-// Ask all servers at the same time. 
-const LKUPMODE_PARALLEL = uint8(0x08)
 
 type MessageConn interface {
 	SendMessage(msg Message) error

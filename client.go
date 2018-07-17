@@ -8,8 +8,8 @@ type Client struct {
 	mconn MessageConn
 }
 
-func NewClient(raddr string) (*Client, error) {
-	mconn, err := DialMessageConn(raddr)
+func NewClient(raddr string, logger Logger) (*Client, error) {
+	mconn, err := DialMessageConn(raddr, logger)
 
 	if err != nil {
 		log.Printf("ERROR: %s", err.Error())

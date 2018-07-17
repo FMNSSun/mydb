@@ -4,24 +4,25 @@ import (
 	"io"
 	"net"
 	"encoding/binary"
-	"log"
 	"sync"
 )
 
 type MyConn struct {
 	conn net.Conn
 	mutex *sync.Mutex
+	logger Logger
 }
 
 
-func NewMessageConn(conn net.Conn) MessageConn {
+func NewMessageConn(conn net.Conn, logger Logger) MessageConn {
 	return &MyConn {
 			conn: conn,
 			mutex: &sync.Mutex{},
+			logger: logger,
 	}
 }
 
-func DialMessageConn(raddr string) (MessageConn, error) {
+func DialMessageConn(raddr string, logger Logger) (MessageConn, error) {
 	addr, err := net.ResolveTCPAddr("tcp", raddr)
 
 	if err != nil {
@@ -37,6 +38,7 @@ func DialMessageConn(raddr string) (MessageConn, error) {
 	return &MyConn {
 		conn: conn,
 		mutex: &sync.Mutex{},
+		logger: logger,
 	}, nil
 }
 
@@ -48,8 +50,23 @@ func (mc *MyConn) End() {
 	mc.mutex.Unlock()
 }
 
+func (mc *MyConn) Close() {
+	mc.conn.Close()
+}
+
+func (mc *MyConn) CloseAndEnd() {
+	mc.conn.Close()
+	mc.mutex.Unlock()
+}
+
 func (mc *MyConn) SendMessage(msg Message) error {
-	return WriteMessage(mc.conn, msg)
+	err := WriteMessage(mc.conn, msg)
+
+	if err != nil {
+		mc.logger.Outf(LOGLVL_ERROR, "[CONN] ERROR: send msg: %s", err.Error())
+	}
+
+	return err
 }
 
 func (mc *MyConn) ReadMessage() (Message, error) {
@@ -58,7 +75,7 @@ func (mc *MyConn) ReadMessage() (Message, error) {
 	_, err := io.ReadFull(mc.conn, header)
 
 	if err != nil {
-		log.Printf("[CONN] ERROR: header: %s", err.Error())
+		mc.logger.Outf(LOGLVL_ERROR, "[CONN] ERROR: recv header: %s", err.Error())
 		return nil, err
 	}
 
@@ -71,7 +88,7 @@ func (mc *MyConn) ReadMessage() (Message, error) {
 	_, err = io.ReadFull(mc.conn, payload)
 
 	if err != nil {
-		log.Printf("[CONN] ERROR: payload: %s", err.Error())
+		mc.logger.Outf(LOGLVL_ERROR, "[CONN] ERROR: recv payload: %s", err.Error())
 		return nil, err
 	}
 

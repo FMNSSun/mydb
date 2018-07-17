@@ -51,7 +51,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	client, err := NewClient("localhost:10001")
+	client, err := NewClient("localhost:10001", NewLogger(os.Stderr, "C1 >"))
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -63,7 +63,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	client, err = NewClient("localhost:10003")
+	client, err = NewClient("localhost:10003", NewLogger(os.Stderr, "C3 >"))
 
 	if err != nil {
 		log.Fatal(err.Error())

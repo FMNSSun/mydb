@@ -24,7 +24,7 @@ func NewEngine(s Storage, logger Logger) Engine {
 
 func (de *DefaultEngine) AddReplica(raddr string) error {
 
-	mconn, err := DialMessageConn(raddr)
+	mconn, err := DialMessageConn(raddr, de.logger)
 
 	if err != nil {
 		de.logger.Outf(LOGLVL_ERROR, "[ENGINE] ERROR: %s", err.Error())
@@ -41,7 +41,7 @@ func (de *DefaultEngine) AddReplica(raddr string) error {
 
 func (de *DefaultEngine) AddLookup(raddr string) error {
 
-	mconn, err := DialMessageConn(raddr)
+	mconn, err := DialMessageConn(raddr, de.logger)
 
 	if err != nil {
 		de.logger.Outf(LOGLVL_ERROR, "[ENGINE] ERROR: %s", err.Error())
@@ -77,7 +77,7 @@ func (de *DefaultEngine) acceptLoop(laddr string) error {
 			break
 		}
 
-		go de.connLoop(NewMessageConn(conn))
+		go de.connLoop(NewMessageConn(conn, de.logger))
 	}
 
 	de.logger.Out(LOGLVL_VERBOSE, "[ENGINE] exit acceptLoop")
@@ -135,15 +135,19 @@ func (de *DefaultEngine) Lookup(getMsg *Get) ([]byte, EngineError) {
 
 		lookup.Begin()
 
-		lookup.SendMessage(getMsg)
+		sendErr := lookup.SendMessage(getMsg)
 
-		retMsg, errNew := lookup.ReadMessage()
+		if sendErr != nil {
+			de.logger.Outf(LOGLVL_ERROR, "[ENGINE] ERROR: %s", sendErr.Error())
+		}
+
+		retMsg, recvErr := lookup.ReadMessage()
 
 		lookup.End()
 
-		if errNew != nil {
-			de.logger.Outf(LOGLVL_ERROR, "[ENGINE] ERROR: %s", err.Error())
-			err = errNew
+		if recvErr != nil {
+			de.logger.Outf(LOGLVL_ERROR, "[ENGINE] ERROR: %s", recvErr.Error())
+			err = recvErr
 		} else {
 			switch retMsg.(type) {
 			case *Status:
