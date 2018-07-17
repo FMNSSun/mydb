@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>mydb</title>
+		<link rel="stylesheet" href="./stylesheet.css">
+		<link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono" rel="stylesheet"> 
+	</head>
+	<body>
+		<h1 id="head"><a href="#head">Mydb</a></h1>
+		<p>
+			<i>mydb</i> is a distributed key-value storage. It supports replication among nodes and lookups among nodes.
+		</p>
+		<h1 id="use-cases"><a href="#use-cases">Use Cases</a></h1>
+		<p>
+		</p>
+		<h2 id="scen-a"><a href="#scen-a">Scenario A</a></h2>
+		<p>
+			You have multiple nodes producing data and multiple readers where you have a significant amount of read requests
+			and need to distribute the load? 
+		</p>
+		<figure>
+			<figcaption><b>Scenario A:</b> One master, read-only replicas, multiple producers, multiple consumers</figcaption>
+			<img src="./img/Scen_A.png" />
+		</figure>
+		<p>
+			With <i>mydb</i> you can create a single master node collecting all the data and replicating the data to the read-only replicas. The
+			clients will then connect to one of the replicas. This distributes the read requests among multiple nodes. 
+		</p>
+		<h2 id="scen-b"><a href="#scen-b">Scenario B</a></h2>
+		<p>
+			You have two (or more) sites with clients that read and write data but rarely need data produced by a client in another site?
+		</p>
+		<figure>
+			<figcaption><b>Scenario B: Two sites with on demand lookup between the sites</b>
+			<img src="./img/Scen_B.png" />
+		</figure>
+		<p>
+			With <i>mydb</i> you can use on demand lookup. With on demand lookup the servers will forward requests
+			they can't answer and return the result back to the client with or without caching the result.   
+		</p>
+		<h2 id="scen-c"><a href="#scen-c">Scenario C</a></h2>
+		<p>
+			
+		</p>
+	</body>
+</html>
+

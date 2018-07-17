@@ -95,6 +95,11 @@ code {
 	font-family: monospace, monospace;
 }
 
+pre.code {
+	font-size: 1rem;
+	border-left: solid 0.25rem #447777;
+}
+
 pre {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
@@ -118,7 +123,6 @@ img {
 	display: block;
 	max-width: 99%;
 	padding: 0.3rem;
-	background-color: #CCEEEE;
 }
 
 small {
@@ -134,7 +138,7 @@ figcaption, caption {
 figure {
 	margin: auto;
 	max-width: 80%;
-	border: solid 0.3rem #222222;
+	border: solid 0.3rem #447777;
 	padding: 1rem;
 	margin-top: 1rem;
 	margin-bottom: 1rem;
