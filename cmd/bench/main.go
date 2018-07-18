@@ -30,7 +30,13 @@ func main() {
 
 	logger1 := NewLogger(lout, "E1 > ")
 
-	engine1 := NewEngine(NewSimpleDiskStorage("./dio1/", logger1), logger1)
+	storage1, err := NewSqliteStorage("./sqlite/db1.db", logger1)
+
+	if err != nil {
+		logger1.Fatal(err.Error())
+	}
+
+	engine1 := NewEngine(storage1, logger1)
 
 	go func() {
 		err := engine1.Serve(":10001")
@@ -39,7 +45,13 @@ func main() {
 
 	logger2 := NewLogger(lout, "E2 > ")
 
-	engine2 := NewEngine(NewSimpleDiskStorage("./dio2/", logger2), logger2)
+	storage2, err := NewSqliteStorage("./sqlite/db2.db", logger2)
+
+	if err != nil {
+		logger2.Fatal(err.Error())
+	}
+
+	engine2 := NewEngine(storage2, logger2)
 
 	go func() {
 		err := engine2.Serve(":10002")
@@ -48,7 +60,7 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	err := engine1.AddReplica("localhost:10002")
+	err = engine1.AddReplica("localhost:10002")
 
 	if err != nil {
 		log.Fatal(err.Error())
